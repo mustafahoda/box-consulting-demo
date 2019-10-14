@@ -1,5 +1,5 @@
 {
-  "client_id":"CLIENT_IOD",
+  "client_id":"CLIENT_ID",
   "client_secret":"CLIENT_SECRET",
   "access_token":"ACCESS_TOKEN"
 }
