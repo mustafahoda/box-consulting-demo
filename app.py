@@ -7,6 +7,8 @@ from pdb import set_trace
 
 import json
 
+from src import create_users
+
 with open('config.json') as json_file:
     data = json.load(json_file)
     client_id = data["client_id"]
@@ -21,31 +23,19 @@ auth = OAuth2(
 )
 
 client = Client(auth)
-user = client.user().get();
 
 @click.command()
 @click.option('-m', '--upload-method', type=click.Choice(['excel', 'json'], case_sensitive=False))
 @click.argument('file', type=click.Path(exists=True))
 def create_users_batch(upload_method, file):
 
+
     click.echo(file)
     click.echo(upload_method)
 
-    # Excel Handler
-    if upload_method == 'excel':
-        click.echo('excel')
-        df = pd.read_excel(file)
-
-        for row in df.itertuples():
-            click.echo(row)
-
-            response = client.create_user(row._1 + row._2, row.Email)
-            # set_trace()
+    create_users.create_users(upload_method, file)
 
 
-    # JSON Handler
-    if upload_method == 'json':
-        click.echo('json')
 
 @click.command()
 def get_users():
@@ -73,6 +63,6 @@ def delete_users():
 #     pass
 
 if __name__ == "__main__":
-    # create_users_batch(
+    create_users_batch()
     # delete_users()
-    get_users()
+    # get_users()
