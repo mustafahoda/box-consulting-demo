@@ -126,3 +126,6 @@ dmypy.json
 
 # Pycharm files
 .idea/
+
+# Project Configuration Files
+config.json
