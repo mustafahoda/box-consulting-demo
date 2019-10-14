@@ -24,7 +24,11 @@ auth = OAuth2(
 
 client = Client(auth)
 
-@click.command()
+@click.group()
+def cli1():
+    pass
+
+@cli1.command()
 @click.option('-m', '--upload-method', type=click.Choice(['excel', 'json'], case_sensitive=False))
 @click.argument('file', type=click.Path(exists=True))
 def create_users_batch(upload_method, file):
@@ -37,7 +41,7 @@ def create_users_batch(upload_method, file):
 
 
 
-@click.command()
+@cli1.command()
 def get_users():
     users = client.users(user_type='all')
     for user in users:
@@ -45,7 +49,7 @@ def get_users():
 
 
 
-@click.command()
+@cli1.command()
 def delete_users():
 
     user_input = input("If you are sure you'd like to delete all users, enter DELETE: ")
@@ -62,7 +66,7 @@ def delete_users():
 # def migrate_files():
 #     pass
 
+cli = click.CommandCollection(sources=[cli1])
+
 if __name__ == "__main__":
-    create_users_batch()
-    # delete_users()
-    # get_users()
+    cli()
