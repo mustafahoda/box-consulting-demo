@@ -9,6 +9,10 @@ from src.groups import is_a_group, create_groups
 
 client = BoxClient().client
 
+def search_user_by_email(login):
+    users = client.users(filter_term=login)
+    return users
+
 def create_users(upload_method, file, group):
 
     # If the group exists, get group id. If it doesn't create it.
@@ -17,7 +21,15 @@ def create_users(upload_method, file, group):
         for group in groups:
             group_id = group['id']
     else:
-        group_response = create_groups(group)
+        user_input = input("The group %s doesn't exist. Would you like to craete it (yes/no)?" % group)
+
+        # user chose to create a new group
+        if user_input == "yes":
+            group_response = create_groups(group)
+        # user chose NOT to create a new group. Break out of function
+        elif user_input == "no":
+            print("User chose not to create the group. No users were added your box account")
+            return 0
 
     set_trace()
 
@@ -42,3 +54,27 @@ def create_users(upload_method, file, group):
                 set_trace()
                 response = client.create_user(name = name, login=email)
                 set_trace()
+
+def delete_all_users(force):
+    users = client.users(user_type='all')
+
+    for user in users:
+        print('{0} (User ID: {1})'.format(user.name, user.id))
+        client.user(user.id).delete(force=force)
+
+def delete_user(email, force):
+
+    user_id = None
+
+    # Retrieve a list of box users with that email address. Then assign the correct id
+    users = search_user_by_email(email)
+
+    for user in users:
+        user_id = user.id
+
+    # if unable to retrieve a user_id
+    if user_id == None: return False
+
+    delete_response = client.user(user_id).delete(force=force)
+
+    return delete_response

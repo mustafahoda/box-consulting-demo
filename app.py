@@ -46,17 +46,27 @@ def get_users():
 
 
 @cli1.command()
-def delete_users():
+@click.option('-f', '--force', type=click.Choice(['True', 'False']), help="True: if you'd like to delete files belonging to the user. False: if you'd like to maintain files after user has been deleted", required=True)
+def delete_all_users(force):
 
-    user_input = input("If you are sure you'd like to delete all users, enter DELETE: ")
+    click.echo("If you are sure you'd like to delete all users, enter DELETE. Any other key if you don't want to delete.")
+    user_input = input()
 
     if user_input == 'DELETE':
-        users = client.users(user_type='all')
-        for user in users:
-            print('{0} (User ID: {1})'.format(user.name, user.id))
+        users.delete_all_users(force)
+    else:
+        click.echo("No users were deleted.")
 
-            client.user(user.id).delete(force=True)
+@cli1.command()
+@click.argument('login')
+@click.option('-f', '--force', type=click.Choice(['True', 'False']), help="True: if you'd like to delete files belonging to the user. False: if you'd like to maintain files after user has been deleted", required=True)
+def delete_user(login, force):
+    response = users.delete_user(login, force)
 
+    if response:
+        click.echo("Successfully deleted user with login %s" % login)
+    else:
+        click.echo("Failed to delete user with login %s" % login)
 
 # @click.command()
 # def migrate_files():
