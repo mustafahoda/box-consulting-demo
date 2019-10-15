@@ -1,13 +1,11 @@
 from boxsdk import OAuth2, Client
 import click
-import pandas as pd
 
-import json
 from pdb import set_trace
 
 import json
 
-from src import create_users
+from src import users
 
 with open('config.json') as json_file:
     data = json.load(json_file)
@@ -30,15 +28,14 @@ def cli1():
 
 @cli1.command()
 @click.option('-m', '--upload-method', type=click.Choice(['excel', 'json'], case_sensitive=False))
-@click.argument('file', type=click.Path(exists=True))
-def create_users_batch(upload_method, file):
-
+@click.argument('file', type=click.Path(exists=True), nargs = 1)
+@click.argument('group', type=click.Choice(['students', 'faculty']), nargs=1)
+def create_users_batch(upload_method, file, group):
 
     click.echo(file)
     click.echo(upload_method)
 
-    create_users.create_users(upload_method, file)
-
+    users.create_users(upload_method, file, group)
 
 
 @cli1.command()

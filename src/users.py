@@ -1,37 +1,32 @@
 import pandas as pd
-from boxsdk import Client, OAuth2
-
 from pdb import  set_trace
 
 import json
 
-with open('config.json') as json_file:
-    data = json.load(json_file)
-    client_id = data["client_id"]
-    client_secret = data["client_secret"]
-    client_token = data["access_token"]
+from src.Client import BoxClient
+from src.groups import is_a_group, create_groups
 
+client = BoxClient().client
 
-auth = OAuth2(
-    client_id=client_id,
-    client_secret=client_secret,
-    access_token=client_token
-)
+def create_users(upload_method, file, group):
 
-client = Client(auth)
+    # If the group exists, get group id. If it doesn't create it.
+    if is_a_group(group):
+        groups = client.get_groups(group)
+        for group in groups:
+            group_id = group['id']
+    else:
+        group_response = create_groups(group)
 
-
-
-def create_users(upload_method, file):
+    set_trace()
 
     # Excel Handler
     if upload_method == 'excel':
         df = pd.read_excel(file)
 
         for row in df.itertuples():
-            print(row)
-            additional_parameters = {}
-            response = client.create_user(row._1 + row._2, row.Email)
+            user = client.create_user(row._1 + row._2, row.Email)
+            membership_response = client.group(group_id=group_id).add_member(user)
             set_trace()
 
 
