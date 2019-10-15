@@ -1,9 +1,8 @@
-from boxsdk import OAuth2, Client
-import click
-
+import json
 from pdb import set_trace
 
-import json
+from boxsdk import OAuth2, Client
+import click
 
 from src import users
 
