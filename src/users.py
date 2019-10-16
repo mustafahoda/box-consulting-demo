@@ -21,13 +21,15 @@ def search_user_by_email(login):
 
 def create_users(upload_method, file, group):
 
+    group_id = None
+
     # If the group exists, get group id. If it doesn't create it.
     if is_a_group(group):
         groups = client.get_groups(group)
         for group in groups:
             group_id = group['id']
     else:
-        user_input = input("The group %s doesn't exist. Would you like to craete it (yes/no)?" % group)
+        user_input = input("The group %s doesn't exist. Would you like to create it (yes/no)?" % group)
 
         # user chose to create a new group
         if user_input == "yes":
@@ -41,21 +43,8 @@ def create_users(upload_method, file, group):
     # Excel Handler
     if upload_method == 'excel':
         df = pd.read_excel(file)
-
         for row in df.itertuples():
-            set_trace()
-            try:
-                user = client.create_user(row._1 + row._2, row.Email)
-                membership_response = client.group(group_id=group_id).add_member(user)
-
-
-            # if an error is throw by the API, handle it by sending to Redis DLQ
-            # the most common error is that user already exists
-            except BoxAPIException as e:
-                #TODO Implement Logging
-                print("ERROR Code: %s. %s: %s" % (e.status, e.message, row.Email))
-
-                # TODO: Implement Redis Q Implementation
+            create_user(row._1 + row._2, row.Email, group_id)
 
     # JSON Handler
     if upload_method == 'json':
@@ -65,7 +54,24 @@ def create_users(upload_method, file, group):
             for current_user in data:
                 name = current_user['first_name'] + ' ' + current_user['last_name']
                 email = current_user['email']
-                response = client.create_user(name = name, login=email)
+                create_user(name, email, group_id)
+
+
+def create_user(name, login, group_id):
+    try:
+        user = client.create_user(name, login)
+
+        if login != None:
+            membership_response = client.group(group_id=group_id).add_member(user)
+
+    # if an error is throw by the API, handle it by sending to Redis DLQ
+    # the most common error is that user already exists
+    except BoxAPIException as e:
+        # TODO Implement Logging
+        print("ERROR Code: %s. %s: %s" % (e.status, e.message, login))
+
+        # TODO: Implement Redis Q Implementation
+
 
 def delete_all_users(force):
     users = client.users(user_type='all')
