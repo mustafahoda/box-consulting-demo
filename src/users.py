@@ -1,13 +1,19 @@
 import json
+from pdb import  set_trace
 
 import pandas as pd
-from pdb import  set_trace
+from boxsdk.exception import BoxAPIException
 
 
 from src.Client import BoxClient
 from src.groups import is_a_group, create_groups
 
 client = BoxClient().client
+
+def get_users():
+    users = client.users(user_type='all')
+    for user in users:
+        print('{0} (User ID: {1})'.format(user.name, user.id))
 
 def search_user_by_email(login):
     users = client.users(filter_term=login)
@@ -31,17 +37,25 @@ def create_users(upload_method, file, group):
             print("User chose not to create the group. No users were added your box account")
             return 0
 
-    set_trace()
 
     # Excel Handler
     if upload_method == 'excel':
         df = pd.read_excel(file)
 
         for row in df.itertuples():
-            user = client.create_user(row._1 + row._2, row.Email)
-            membership_response = client.group(group_id=group_id).add_member(user)
             set_trace()
+            try:
+                user = client.create_user(row._1 + row._2, row.Email)
+                membership_response = client.group(group_id=group_id).add_member(user)
 
+
+            # if an error is throw by the API, handle it by sending to Redis DLQ
+            # the most common error is that user already exists
+            except BoxAPIException as e:
+                #TODO Implement Logging
+                print("ERROR Code: %s. %s: %s" % (e.status, e.message, row.Email))
+
+                # TODO: Implement Redis Q Implementation
 
     # JSON Handler
     if upload_method == 'json':
@@ -51,9 +65,7 @@ def create_users(upload_method, file, group):
             for current_user in data:
                 name = current_user['first_name'] + ' ' + current_user['last_name']
                 email = current_user['email']
-                set_trace()
                 response = client.create_user(name = name, login=email)
-                set_trace()
 
 def delete_all_users(force):
     users = client.users(user_type='all')
