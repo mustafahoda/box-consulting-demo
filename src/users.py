@@ -60,6 +60,7 @@ def create_users(upload_method, file, group):
 def create_user(name, login, group_id):
     try:
         user = client.create_user(name, login)
+        set_trace()
 
         if login != None:
             membership_response = client.group(group_id=group_id).add_member(user)
@@ -71,6 +72,9 @@ def create_user(name, login, group_id):
         print("ERROR Code: %s. %s: %s" % (e.status, e.message, login))
 
         # TODO: Implement Redis Q Implementation
+
+    else:
+        print("%s added!" % user)
 
 
 def delete_all_users(force):
