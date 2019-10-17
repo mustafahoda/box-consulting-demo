@@ -1,4 +1,6 @@
+import os
 import json
+from datetime import datetime
 from pdb import  set_trace
 
 import pandas as pd
@@ -8,7 +10,8 @@ from boxsdk.exception import BoxAPIException
 from src.Client import BoxClient
 from src.groups import is_a_group, create_groups
 
-client = BoxClient().client
+box_client = BoxClient()
+client = box_client.client
 
 def get_users():
     users = client.users(user_type='all')
@@ -43,11 +46,16 @@ def create_users(upload_method, file, group):
     # Excel Handler
     if upload_method == 'excel':
         df = pd.read_excel(file)
+        count = 0
         for row in df.itertuples():
+            if count == 10:
+                break
+
             create_user(row._1 + row._2, row.Email, group_id)
+            count = count + 1
 
     # JSON Handler
-    if upload_method == 'json':
+    elif upload_method == 'json':
         with open(file) as json_file:
             data = json.load(json_file)
 
@@ -55,6 +63,15 @@ def create_users(upload_method, file, group):
                 name = current_user['first_name'] + ' ' + current_user['last_name']
                 email = current_user['email']
                 create_user(name, email, group_id)
+
+    # Create a failed report and export to Excel for any failed users
+    if len(box_client.failed_user_uploads) != 0:
+        failed_data_frame = pd.DataFrame(box_client.failed_user_uploads)
+        path = ('%s/static/reports/failed_user_batch_%s.csv' % (os.getcwd(), box_client.client_created_time.strftime("%Y-%m-%dT%H:%M:%S%z")))
+        failed_data_frame.to_csv(path_or_buf=path,header=['name', 'status', 'message'])
+
+    print("Done adding users.")
+    print("%s users failed to be uploaded. Check %s to see list users that failed to upload." % (len(box_client.failed_user_uploads), path))
 
 
 def create_user(name, login, group_id):
@@ -65,11 +82,13 @@ def create_user(name, login, group_id):
         if login != None:
             membership_response = client.group(group_id=group_id).add_member(user)
 
-    # if an error is throw by the API, handle it by sending to Redis DLQ
+    # if an error is throw by the API, handle it by sending to failed_array
     # the most common error is that user already exists
     except BoxAPIException as e:
-        # TODO Implement Logging
         print("ERROR Code: %s. %s: %s" % (e.status, e.message, login))
+        print("Writing to Failed Inventory")
+
+        failed_create_user_handler(login, e.status, e.message)
 
         # TODO: Implement Redis Q Implementation
 
@@ -100,3 +119,11 @@ def delete_user(email, force):
     delete_response = client.user(user_id).delete(force=force)
 
     return delete_response
+
+def failed_create_user_handler(login, status, message):
+
+    # set_trace()
+
+    # if the user failed to be created, add it to a failed list.
+    upload_row = [login, status, message]
+    box_client.failed_user_uploads.append(upload_row)

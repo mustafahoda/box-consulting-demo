@@ -24,3 +24,4 @@ class BoxClient():
         self.client = Client(auth)
         self.client_creator = self.client.user()
         self.client_created_time = datetime.datetime.now()
+        self.failed_user_uploads = list()
