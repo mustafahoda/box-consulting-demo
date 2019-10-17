@@ -54,4 +54,6 @@ def delete_user(login, force):
 cli = click.CommandCollection(sources=[cli1])
 
 if __name__ == "__main__":
-    cli()
+
+    while True:
+        cli()

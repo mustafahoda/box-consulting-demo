@@ -4,7 +4,7 @@ from datetime import datetime
 from pdb import  set_trace
 
 import pandas as pd
-from boxsdk.exception import BoxAPIException
+from boxsdk import exception
 
 
 from src.Client import BoxClient
@@ -15,8 +15,16 @@ client = box_client.client
 
 def get_users():
     users = client.users(user_type='all')
-    for user in users:
-        print('{0} (User ID: {1})'.format(user.name, user.id))
+
+    try:
+        for user in users:
+            print('{0} (User ID: {1})'.format(user.name, user.id))
+
+    except (exception.BoxOAuthException, exception.BoxAPIException) as e:
+        print("Error Code: %s" % e.status)
+        print("Message: %s. Suggestion: Check the 'config.json' file." % e.message)
+
+
 
 def search_user_by_email(login):
     users = client.users(filter_term=login)
@@ -84,7 +92,7 @@ def create_user(name, login, group_id):
 
     # if an error is throw by the API, handle it by sending to failed_array
     # the most common error is that user already exists
-    except BoxAPIException as e:
+    except exception.BoxAPIException as e:
         print("ERROR Code: %s. %s: %s" % (e.status, e.message, login))
         print("Writing to Failed Inventory")
 
@@ -97,11 +105,18 @@ def create_user(name, login, group_id):
 
 
 def delete_all_users(force):
-    users = client.users(user_type='all')
 
-    for user in users:
-        print('{0} (User ID: {1})'.format(user.name, user.id))
-        client.user(user.id).delete(force=force)
+    try:
+        users = client.users(user_type='all')
+
+        for user in users:
+            print('{0} (User ID: {1})'.format(user.name, user.id))
+            client.user(user.id).delete(force=force)
+
+    except (exception.BoxOAuthException, exception.BoxAPIException) as e:
+        print("Error Code: %s" % e.status)
+        print("Message: %s. Suggestion: Check the 'config.json' file." % e.message)
+
 
 def delete_user(email, force):
 
