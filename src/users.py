@@ -11,10 +11,6 @@ from src.Client import BoxClient
 from src.groups import is_a_group, create_groups
 
 box_client = BoxClient()
-
-if box_client.connection_valid == False:
-    print("There is no connection established. Can't continue")
-
 client = box_client.client
 
 
@@ -23,14 +19,8 @@ def get_users():
     users_dict = dict()
     users = client.users(user_type='all')
 
-    try:
-        for user in users:
-            users_dict[user.id] = user.name
-
-
-    except (exception.BoxOAuthException, exception.BoxAPIException) as e:
-        print("Error Code: %s" % e.status)
-        print("Message: %s. Suggestion: Check the 'config.json' file." % e.message)
+    for user in users:
+        users_dict[user.id] = user.name
 
     return users_dict
 
@@ -95,6 +85,7 @@ def create_users(upload_method, file, group):
     print("%s users were added to the Enterprise Box Account" % user_created_count)
     print("%s users failed to be uploaded. Check %s to see list of users that failed to upload." % (len(box_client.failed_user_uploads), path))
 
+
 def create_user(name, login, group_id):
 
     success = False
@@ -115,27 +106,24 @@ def create_user(name, login, group_id):
         failed_create_user_handler(login, e.status, e.message)
         return False
 
-        # TODO: Implement Redis Q Implementation
-
     else:
         print("%s added!" % user)
         return True
+
 
 def delete_all_users(force):
 
     # TODO: Return something cleaner and fix in main app.py
 
     delete_count = 0
-    try:
-        users = client.users(user_type='all')
+    users = client.users(user_type='all')
 
-        for user in users:
-            print('{0} (User ID: {1})'.format(user.name, user.id))
-            client.user(user.id).delete(force=force)
-
-    except (exception.BoxOAuthException, exception.BoxAPIException) as e:
-        print("Error Code: %s" % e.status)
-        print("Message: %s. Suggestion: Check the 'config.json' file." % e.message)
+    for user in users:
+        # if the current user is accessed, which is also the admin, don't delete it. Or else will throw exception
+        if user == client.user().get(): continue
+        print('{0} (User ID: {1})'.format(user.name, user.id))
+        delete_response = client.user(user.id).delete(force=force)
+        if delete_response == True: delete_count =+ 1
 
     return delete_count
 
@@ -153,7 +141,6 @@ def delete_user(email, force):
     if user_id == None: return False
 
     delete_response = client.user(user_id).delete(force=force)
-
     return delete_response
 
 def failed_create_user_handler(login, status, message):

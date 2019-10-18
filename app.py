@@ -30,11 +30,13 @@ def print_users():
 @click.option('-f', '--force', type=click.Choice(['True', 'False']), help="True: if you'd like to delete files belonging to the user. False: if you'd like to maintain files after user has been deleted", required=True)
 def delete_all_users(force):
 
+
     click.echo("If you are sure you'd like to delete all users, enter DELETE. This action can not be undone! Any other key if you don't want to delete.")
     user_input = input()
 
     if user_input == 'DELETE':
-        users.delete_all_users(force)
+        response = users.delete_all_users(force)
+        click.echo("%s users were deleted" % response)
     else:
         click.echo("No users were deleted.")
 
@@ -55,7 +57,9 @@ def delete_single_user(login, force):
             click.echo("Failed to delete user with login %s" % login)
 
     else:
-        click.echo("User was not deleted")
+        click.echo("Delete command not entered. No users were deleted")
+
+
 
 
 # @click.command()
