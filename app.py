@@ -4,8 +4,6 @@ import click
 
 from src import users
 
-
-
 @click.group()
 def cli1():
     pass
@@ -20,15 +18,19 @@ def create_users_batch(upload_method, file, group):
 
 
 @cli1.command()
-def get_users():
-    users.get_users()
+def print_users():
+
+    users_list = users.get_users()
+
+    for user in users_list:
+        click.echo("%s : %s" % (user.id, user.message))
 
 
 @cli1.command()
 @click.option('-f', '--force', type=click.Choice(['True', 'False']), help="True: if you'd like to delete files belonging to the user. False: if you'd like to maintain files after user has been deleted", required=True)
 def delete_all_users(force):
 
-    click.echo("If you are sure you'd like to delete all users, enter DELETE. Any other key if you don't want to delete.")
+    click.echo("If you are sure you'd like to delete all users, enter DELETE. This action can not be undone! Any other key if you don't want to delete.")
     user_input = input()
 
     if user_input == 'DELETE':
@@ -39,13 +41,22 @@ def delete_all_users(force):
 @cli1.command()
 @click.argument('login')
 @click.option('-f', '--force', type=click.Choice(['True', 'False']), help="True: if you'd like to delete files belonging to the user. False: if you'd like to maintain files after user has been deleted", required=True)
-def delete_user(login, force):
-    response = users.delete_user(login, force)
+def delete_single_user(login, force):
 
-    if response:
-        click.echo("Successfully deleted user with login %s" % login)
+    click.echo("If you are sure you'd like to delete %s, enter DELETE. This action can not be undone. Any other key if you don't want to delete." % login)
+    user_input = input()
+
+    if user_input == 'DELETE':
+        response = users.delete_user(login, force)
+
+        if response:
+            click.echo("Successfully deleted user with login %s" % login)
+        else:
+            click.echo("Failed to delete user with login %s" % login)
+
     else:
-        click.echo("Failed to delete user with login %s" % login)
+        click.echo("User was not deleted")
+
 
 # @click.command()
 # def migrate_files():

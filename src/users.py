@@ -1,6 +1,6 @@
 import os
 import json
-from datetime import datetime
+# TODO Remove pdb import
 from pdb import  set_trace
 
 import pandas as pd
@@ -11,30 +11,41 @@ from src.Client import BoxClient
 from src.groups import is_a_group, create_groups
 
 box_client = BoxClient()
+
+if box_client.connection_valid == False:
+    print("There is no connection established. Can't continue")
+
 client = box_client.client
 
+
 def get_users():
+
+    users_dict = dict()
     users = client.users(user_type='all')
 
     try:
         for user in users:
-            print('{0} (User ID: {1})'.format(user.name, user.id))
+            users_dict[user.id] = user.name
+
 
     except (exception.BoxOAuthException, exception.BoxAPIException) as e:
         print("Error Code: %s" % e.status)
         print("Message: %s. Suggestion: Check the 'config.json' file." % e.message)
 
+    return users_dict
 
 
 def search_user_by_email(login):
+
     users = client.users(filter_term=login)
     return users
+
 
 def create_users(upload_method, file, group):
 
     group_id = None
 
-    # If the group exists, get group id. If it doesn't create it.
+    # If the group exists, get group id. If it doesn't, create it.
     if is_a_group(group):
         groups = client.get_groups(group)
         for group in groups:
@@ -45,6 +56,7 @@ def create_users(upload_method, file, group):
         # user chose to create a new group
         if user_input == "yes":
             group_response = create_groups(group)
+            print("Group %s created" % group)
         # user chose NOT to create a new group. Break out of function
         elif user_input == "no":
             print("User chose not to create the group. No users were added your box account")
@@ -53,24 +65,25 @@ def create_users(upload_method, file, group):
 
     # Excel Handler
     if upload_method == 'excel':
+        # create a Pandas Dataframe to store Excel Data
         df = pd.read_excel(file)
-        count = 0
-        for row in df.itertuples():
-            if count == 10:
-                break
 
-            create_user(row._1 + row._2, row.Email, group_id)
-            count = count + 1
+        # Todo: is there a better way to iterate through DataFrame rows?
+        user_created_count = 0
+        for row in df.itertuples():
+            create_user_response = create_user(row._1 + row._2, row.Email, group_id)
+            if create_user_response:
+                user_created_count += 1
 
     # JSON Handler
     elif upload_method == 'json':
         with open(file) as json_file:
             data = json.load(json_file)
 
+            user_created_count = 0
             for current_user in data:
-                name = current_user['first_name'] + ' ' + current_user['last_name']
-                email = current_user['email']
-                create_user(name, email, group_id)
+                create_user_response = create_user(current_user['first_name'] + ' ' + current_user['last_name'], current_user['email'], group_id)
+                user_created_count += 1
 
     # Create a failed report and export to Excel for any failed users
     if len(box_client.failed_user_uploads) != 0:
@@ -78,11 +91,14 @@ def create_users(upload_method, file, group):
         path = ('%s/static/reports/failed_user_batch_%s.csv' % (os.getcwd(), box_client.client_created_time.strftime("%Y-%m-%dT%H:%M:%S%z")))
         failed_data_frame.to_csv(path_or_buf=path,header=['name', 'status', 'message'])
 
-    print("Done adding users.")
-    print("%s users failed to be uploaded. Check %s to see list users that failed to upload." % (len(box_client.failed_user_uploads), path))
-
+    # TODO: Keep count of how many users were added and print it.
+    print("%s users were added to the Enterprise Box Account" % user_created_count)
+    print("%s users failed to be uploaded. Check %s to see list of users that failed to upload." % (len(box_client.failed_user_uploads), path))
 
 def create_user(name, login, group_id):
+
+    success = False
+
     try:
         user = client.create_user(name, login)
         set_trace()
@@ -97,15 +113,19 @@ def create_user(name, login, group_id):
         print("Writing to Failed Inventory")
 
         failed_create_user_handler(login, e.status, e.message)
+        return False
 
         # TODO: Implement Redis Q Implementation
 
     else:
         print("%s added!" % user)
-
+        return True
 
 def delete_all_users(force):
 
+    # TODO: Return something cleaner and fix in main app.py
+
+    delete_count = 0
     try:
         users = client.users(user_type='all')
 
@@ -117,6 +137,7 @@ def delete_all_users(force):
         print("Error Code: %s" % e.status)
         print("Message: %s. Suggestion: Check the 'config.json' file." % e.message)
 
+    return delete_count
 
 def delete_user(email, force):
 
