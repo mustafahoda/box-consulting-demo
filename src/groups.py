@@ -1,13 +1,27 @@
-from pdb import set_trace
+import logging
+import logging.config
+import json
+import os
 
 from src.Client import BoxClient
 
-client = BoxClient().client
+box_client = BoxClient()
+client = box_client.client
+
+# Loads Config Data from config.json
+with open('config.json') as json_file:
+    data = json.load(json_file)
+    log_config = data["logger_config"]
+    log_config['handlers']['file']['filename'] = '%s/static/reports/%s.log' % (os.getcwd(), box_client.client_created_time.strftime("%Y-%m-%dT%H:%M:%S%z"))
+
+logging.config.dictConfig(log_config)
+logger = logging.getLogger(__name__)
+
 
 def create_groups(group_name):
 
     if is_a_group(group_name):
-        print('Group already exists.')
+        logger.warning('Group already exists.')
     else:
         response = client.create_group(group_name)
 

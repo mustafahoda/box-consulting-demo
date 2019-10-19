@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import logging.config
 # TODO Remove pdb import
 from pdb import  set_trace
 
@@ -11,12 +12,20 @@ from src.Client import BoxClient
 from src.DB import DB
 from src.groups import create_groups, get_group_id
 
+
 box_client = BoxClient()
 client = box_client.client
 
 db = DB()
 
+# Loads Config Data from config.json
+with open('config.json') as json_file:
+    data = json.load(json_file)
+    log_config = data["logger_config"]
+    log_config['handlers']['file']['filename'] = '%s/static/reports/%s.log' % (os.getcwd(), box_client.client_created_time.strftime("%Y-%m-%dT%H:%M:%S%z"))
 
+logging.config.dictConfig(log_config)
+logger = logging.getLogger(__name__)
 
 
 def get_users():
