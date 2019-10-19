@@ -21,12 +21,18 @@ def print_users():
 @click.argument('file', type=click.Path(exists=True), nargs = 1)
 @click.argument('group', type=click.Choice(['students', 'faculty']), nargs=1)
 @click.option('-m', '--upload-method', type=click.Choice(['excel', 'json'], case_sensitive=False))
-def create_users_batch(upload_method, file, group):
+@click.option('-q', '--query',)
+def create_users_batch(upload_method, file, group, query):
 
-    create_users_response = users.create_users(upload_method, file, group)
+    create_users_response = users.create_users(upload_method, file, group, query)
 
     # TODO: Keep count of how many users were added and print it.
 
+@cli1.command()
+@click.argument('query')
+def create_users_db(query):
+
+    create_users_response = users.create_users('db', None, 'students', query)
 
 
 @cli1.command()
@@ -59,7 +65,8 @@ def delete_all_users(force):
 
     if user_input == 'DELETE':
         response = users.delete_all_users(force)
-        click.echo("%s users were deleted" % response)
+        click.echo("%s users were deleted" % response['success_count'])
+        click.echo("%s users failed to be deleted" % response['fail_count'])
     else:
         click.echo("No users were deleted.")
 

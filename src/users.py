@@ -8,12 +8,14 @@ import pandas as pd
 from boxsdk import exception
 
 from src.Client import BoxClient
+from src.DB import DB
 from src.groups import create_groups, get_group_id
 
 box_client = BoxClient()
 client = box_client.client
 
-# logging.basicConfig(level = logging.INFO)
+db = DB()
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -52,7 +54,7 @@ def get_user_by_email(login):
 
     return user
 
-def create_users(upload_method, file, group_name):
+def create_users(upload_method, file, group_name, query):
 
     """
     Create users at scale
@@ -105,6 +107,20 @@ def create_users(upload_method, file, group_name):
                 if create_user_response: success_count  += 1
                 else: fail_count += 1
 
+    # PostgreSQL Handler
+    elif upload_method == 'db':
+        with db.conn.cursor() as cursor:
+            cursor.execute(query)
+            records = cursor.fetchall()
+
+            for row in records:
+                login = row[3]
+                create_user_response = create_user(row[1] + row[2], login, group_name)
+
+                if create_user_response: success_count += 1
+                else: fail_count += 1
+
+
     # TODO: Implement with Logging
     # Create a failed report and export to Excel for any failed users
     if len(box_client.reporting_list) != 0:
@@ -150,9 +166,7 @@ def create_user(name, login, group_name):
         return success
 
     else:
-        set_trace()
         logger.info(f'{user} created')
-        print("LOL")
 
         success = True
         return success

@@ -11,9 +11,10 @@ from boxsdk import exception
 # Loads Config Data from config.json
 with open('config.json') as json_file:
     data = json.load(json_file)
-    client_id = data["client_id"]
-    client_secret = data["client_secret"]
-    client_token = data["access_token"]
+    app_config = data["app_config"]
+    client_id = app_config["client_id"]
+    client_secret = app_config["client_secret"]
+    client_token = app_config["access_token"]
 
 
 auth = OAuth2(
