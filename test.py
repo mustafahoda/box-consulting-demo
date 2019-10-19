@@ -1,4 +1,5 @@
 from src import users, groups
+from src import Logger
+test_logger = Logger.AppLogger()
 
-# groups.get_group_id('test')
-users.create_user('North Face', 'zak@gogismushi.com', 'students')
+test_logger.logger.info("LOL")

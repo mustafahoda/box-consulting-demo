@@ -29,5 +29,3 @@ class BoxClient():
         self.client = Client(auth)
         self.client_creator = self.client.user()
         self.client_created_time = datetime.datetime.now()
-        self.success_reporting_list = list()
-        self.failed_reporting_list = list()

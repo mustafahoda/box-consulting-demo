@@ -19,7 +19,7 @@ def print_users():
 
 @cli1.command()
 @click.argument('file', type=click.Path(exists=True), nargs = 1)
-@click.argument('group', type=click.Choice(['students', 'faculty']), nargs=1)
+@click.argument('group', nargs=1)
 @click.option('-m', '--upload-method', type=click.Choice(['excel', 'json'], case_sensitive=False))
 @click.option('-q', '--query',)
 def create_users_batch(upload_method, file, group, query):
