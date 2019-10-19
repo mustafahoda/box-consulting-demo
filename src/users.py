@@ -15,6 +15,10 @@ client = box_client.client
 
 
 def get_users():
+    """
+
+    :return:
+    """
 
     users_dict = dict()
     users = client.users(user_type='all')
@@ -25,13 +29,32 @@ def get_users():
     return users_dict
 
 
-def search_user_by_email(login):
+def get_user_by_email(login):
+    """
+    Searches for a user by email and returns a Box User Object
+    :param login:
+    :return:
+    """
 
+    user = None
     users = client.users(filter_term=login)
-    return users
 
+    for user in users:
+        if user.login == login:
+            return user
+
+    return user
 
 def create_users(upload_method, file, group_name):
+
+    """
+    Create users at scale
+
+    :param upload_method:
+    :param file:
+    :param group_name:
+    :return: a dictionary containing on how many users were created and how many failed to be created
+    """
 
     success_count = 0
     fail_count = 0
@@ -85,14 +108,22 @@ def create_users(upload_method, file, group_name):
 
     return {'success_count': success_count, 'fail_count': fail_count}
 
+def create_user(name, login, group_name):
 
-def create_user(name, login, group):
+    """
+    Creates a single user
+
+    :param name: Name of the user
+    :param login: what's the login for the user you are creating
+    :param group_name: which group do you want the user to be assigned to
+    :return:
+    """
 
     success = False
 
-    if name == None or login == None or group == None:   return success
+    if name == None or login == None or group_name == None:   return success
 
-    group_id = get_group_id(group)
+    group_id = get_group_id(group_name)
 
     try:
         user = client.create_user(name, login)
@@ -117,12 +148,16 @@ def create_user(name, login, group):
         success = True
         return success
 
-
 def delete_all_users(force):
+    """
+    Delete all users at scale. Can not be undone.
 
-    # TODO: Return something cleaner and fix in main app.py
+    :param force:
+    :return:
+    """
 
-    delete_count = 0
+    success_count = 0
+    fail_count = 0
     users = client.users(user_type='all')
 
     for user in users:
@@ -131,39 +166,44 @@ def delete_all_users(force):
         if user == client.user().get(): continue
 
         delete_response = client.user(user.id).delete(force=force)
+
         if delete_response == True:
             logging.warning('Deleted: {0} (User ID: {1})'.format(user.name, user.id))
-            delete_count += 1
+            success_count += 1
+        else:
+            fail_count += 1
 
-    return delete_count
+
+    return {'success_count':success_count, 'fail_count':fail_count}
 
 def delete_user(email, force):
+    """
+    Delete a single user
 
-    user_id = None
+    :param email:
+    :param force:
+    :return:
+    """
 
-    # Retrieve a list of box users with that email address. Then assign the correct id
-    users = search_user_by_email(email)
+    success = False
 
-    for user in users:
-        user_id = user.id
+    user = get_user_by_email(email)
+    if user == None: return success
 
-    # if unable to retrieve a user_id
-    if user_id == None: return False
+    success = client.user(user.id).delete(force=force)
 
-    delete_response = client.user(user_id).delete(force=force)
-    return delete_response
+    return success
 
+#TODO : Consider deleting
 def failed_reporting_list(login, status, message):
 
     # if the user failed to be created, add it to a failed list.
     upload_row = [login, status, message]
     box_client.failed_reporting_list.append(upload_row)
 
+#TODO : Consider deleting
 def success_reporting_list(login, status, message):
 
     # if the user is successfully created, add it to a success list.
     upload_row = [login, status, message]
     box_client.success_reporting_list.append(upload_row)
-
-if __name__ == "__main__":
-    create_user('LOL', 'asdfadsjf;lkafs@gmail.com', 'student')

@@ -13,6 +13,13 @@ def create_groups(group_name):
 
 
 def is_a_group(group_to_check):
+
+    """
+    returns whether a group is a present in the enterprise
+
+    :param group_to_check:
+    :return:
+    """
     groups = client.get_groups(group_to_check)
     list_of_groups = []
 
@@ -26,6 +33,13 @@ def assign_user_group(user_id, group):
     pass
 
 def get_group_id(group_name):
+
+    """
+    Returns the group id as an int by searching for the group name
+
+    :param group_name:
+    :return: int
+    """
 
     group_id = None
     groups = client.get_groups(group_name)
