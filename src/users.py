@@ -8,10 +8,18 @@ import pandas as pd
 from boxsdk import exception
 
 from src.Client import BoxClient
-from src.groups import is_a_group, create_groups, get_group_id
+from src.groups import create_groups, get_group_id
 
 box_client = BoxClient()
 client = box_client.client
+
+# logging.basicConfig(level = logging.INFO)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+c_handler = logging.StreamHandler()
+c_handler.setLevel(logging.INFO)
+logger.addHandler(c_handler)
 
 
 def get_users():
@@ -27,7 +35,6 @@ def get_users():
         users_dict[user.id] = user.name
 
     return users_dict
-
 
 def get_user_by_email(login):
     """
@@ -143,7 +150,9 @@ def create_user(name, login, group_name):
         return success
 
     else:
-        logging.debug(f'{user} created')
+        set_trace()
+        logger.info(f'{user} created')
+        print("LOL")
 
         success = True
         return success
