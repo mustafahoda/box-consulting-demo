@@ -28,11 +28,5 @@ class BoxClient():
         self.client = Client(auth)
         self.client_creator = self.client.user()
         self.client_created_time = datetime.datetime.now()
-        self.failed_user_uploads = list()
-
-        # try:
-        #     self.connection_valid = self.client.get_current_enterprise()
-        # except exception.BoxOAuthException:
-        #     self.connection_valid = False
-        # else:
-        #     self.connection_valid = True
+        self.success_reporting_list = list()
+        self.failed_reporting_list = list()

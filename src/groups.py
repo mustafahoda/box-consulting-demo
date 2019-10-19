@@ -24,3 +24,16 @@ def is_a_group(group_to_check):
 
 def assign_user_group(user_id, group):
     pass
+
+def get_group_id(group_name):
+
+    group_id = None
+    groups = client.get_groups(group_name)
+
+    for group in groups:
+        if group.name == group_name:
+            group_id = group.id
+            return group_id
+
+    return group_id
+

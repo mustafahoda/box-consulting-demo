@@ -9,15 +9,6 @@ def cli1():
     pass
 
 @cli1.command()
-@click.option('-m', '--upload-method', type=click.Choice(['excel', 'json'], case_sensitive=False))
-@click.argument('file', type=click.Path(exists=True), nargs = 1)
-@click.argument('group', type=click.Choice(['students', 'faculty']), nargs=1)
-def create_users_batch(upload_method, file, group):
-
-    users.create_users(upload_method, file, group)
-
-
-@cli1.command()
 def print_users():
 
     users_list = users.get_users()
@@ -27,18 +18,16 @@ def print_users():
 
 
 @cli1.command()
-@click.option('-f', '--force', type=click.Choice(['True', 'False']), help="True: if you'd like to delete files belonging to the user. False: if you'd like to maintain files after user has been deleted", required=True)
-def delete_all_users(force):
+@click.argument('file', type=click.Path(exists=True), nargs = 1)
+@click.argument('group', type=click.Choice(['students', 'faculty']), nargs=1)
+@click.option('-m', '--upload-method', type=click.Choice(['excel', 'json'], case_sensitive=False))
+def create_users_batch(upload_method, file, group):
+
+    create_users_response = users.create_users(upload_method, file, group)
+
+    # TODO: Keep count of how many users were added and print it.
 
 
-    click.echo("If you are sure you'd like to delete all users, enter DELETE. This action can not be undone! Any other key if you don't want to delete.")
-    user_input = input()
-
-    if user_input == 'DELETE':
-        response = users.delete_all_users(force)
-        click.echo("%s users were deleted" % response)
-    else:
-        click.echo("No users were deleted.")
 
 @cli1.command()
 @click.argument('login')
@@ -58,6 +47,23 @@ def delete_single_user(login, force):
 
     else:
         click.echo("Delete command not entered. No users were deleted")
+
+
+@cli1.command()
+@click.option('-f', '--force', type=click.Choice(['True', 'False']), help="True: if you'd like to delete files belonging to the user. False: if you'd like to maintain files after user has been deleted", required=True)
+def delete_all_users(force):
+
+
+    click.echo("If you are sure you'd like to delete all users, enter DELETE. This action can not be undone! Any other key if you don't want to delete.")
+    user_input = input()
+
+    if user_input == 'DELETE':
+        response = users.delete_all_users(force)
+        click.echo("%s users were deleted" % response)
+    else:
+        click.echo("No users were deleted.")
+
+
 
 
 
