@@ -63,7 +63,7 @@ class BoxClient():
         return users.create_user(self.client, name, login, group)
 
     def create_users(self, upload_method, file, group_name, query):
-        return users.create_users(upload_method, file, group_name, query)
+        return users.create_users(self.client, upload_method, file, group_name, query)
 
     def delete_all_users(self, force):
         return users.delete_all_users(self.client, force)

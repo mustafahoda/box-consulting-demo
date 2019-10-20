@@ -3,6 +3,8 @@ import logging.config
 import json
 import os
 
+from pdb import set_trace
+
 
 # Loads Config Data from config.json
 with open('config/config.json') as json_file:
@@ -16,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 def create_groups(client, logger, group_name):
 
-    if is_a_group(group_name):
+    if is_a_group(client, group_name):
         logger.warning('Group already exists.')
     else:
         response = client.create_group(group_name)
@@ -30,6 +32,8 @@ def is_a_group(client, group_to_check):
     :param group_to_check:
     :return:
     """
+
+    set_trace()
     groups = client.get_groups(group_to_check)
     list_of_groups = []
 

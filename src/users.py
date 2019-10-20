@@ -55,7 +55,7 @@ def get_user_by_email(client, login):
 
     return user
 
-def create_users(upload_method, file, group_name, query):
+def create_users(client, upload_method, file, group_name, query):
     """
     Create users at scale
 
@@ -68,14 +68,14 @@ def create_users(upload_method, file, group_name, query):
     success_count = 0
     fail_count = 0
 
-    group_id = get_group_id(group_name)
+    group_id = get_group_id(client, group_name)
 
     # If the group doesn't exist, create it.
     if not group_id:
         user_input = input("The group %s doesn't exist. Would you like to create it (yes/no)? " % group_name)
 
         if user_input == "yes":
-            group_response = create_groups(group_name)
+            group_response = create_groups(client, logger, group_name)
 
             msg = "Group '%s' successfully created" % group_name
             logger.info(msg)
@@ -93,6 +93,8 @@ def create_users(upload_method, file, group_name, query):
         # create a Pandas Dataframe to store Excel Data
         df = pd.read_excel(file)
 
+        if len(df) > 10: create_users_with_thread(payload)
+
         # Todo: is there a better way to iterate through DataFrame rows?
         for row in df.itertuples():
             create_user_response = create_user(row._1 + row._2, row.Email, group_name)
@@ -104,6 +106,8 @@ def create_users(upload_method, file, group_name, query):
     elif upload_method == 'json':
         with open(file) as json_file:
             data = json.load(json_file)
+
+            if len(data) > 10: create_users_with_thread(payload)
 
             for current_user in data:
                 create_user_response = create_user(current_user['first_name'] + ' ' + current_user['last_name'], current_user['email'], group_name)
@@ -119,6 +123,10 @@ def create_users(upload_method, file, group_name, query):
         with db.conn.cursor() as cursor:
             cursor.execute(query)
             records = cursor.fetchall()
+
+            num_rows = cursor.rowcount
+            if num_rows > 10: create_users_with_thread(payload)
+
 
             for row in records:
                 login = row[3]
@@ -231,6 +239,12 @@ def delete_user(client, email, force):
         logger.error(msg)
 
     return success
+
+def create_users_with_thread(payload):
+
+    with ThreadPoolExecutor(max_workers=15) as executors:
+        for _ in executors.map(create_user, payload):
+            print("done")
 
 
 

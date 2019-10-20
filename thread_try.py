@@ -32,17 +32,17 @@ if __name__ == "__main__":
 
     # Threading example
     # start = timer()
-    # with ThreadPoolExecutor(max_workers=4) as executor:
-    #     for _ in executor.map(create_user, users_to_add):
-    #         print("done")
-    #
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        for _ in executor.map(create_user, users_to_add):
+            print("done")
+
     # end1 = timer()
 
     # Non-threading example
-    for _ in users_to_add:
-        create_user(_)
-
-    end2 = timer()
+    # for _ in users_to_add:
+    #     create_user(_)
+    #
+    # end2 = timer()
 
     # print("start: %s" % start)
     # print("end1: %s" % end1)

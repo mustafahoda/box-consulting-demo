@@ -21,10 +21,9 @@ def print_users():
 @cli1.command()
 @click.argument('file', type=click.Path(exists=True), nargs = 1)
 @click.argument('group', nargs=1)
-@click.option('-m', '--upload-method', type=click.Choice(['excel', 'json'], case_sensitive=False))
-@click.option('-q', '--query',)
+@click.option('-m', '--upload-method', type=click.Choice(['excel', 'json', 'db'], case_sensitive=False))
+@click.option('-q', '--query', required = False)
 def create_users_batch(upload_method, file, group, query):
-
     create_users_response = app_client.create_users(upload_method, file, group, query)
     set_trace()
 
