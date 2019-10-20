@@ -59,6 +59,9 @@ class BoxClient():
     def get_user_by_email(self, login):
         return users.get_user_by_email(self.client, login)
 
+    def create_user(self, name, login, group):
+        return users.create_user(self.client, name, login, group)
+
     def create_users(self, upload_method, file, group_name, query):
         return users.create_users(upload_method, file, group_name, query)
 

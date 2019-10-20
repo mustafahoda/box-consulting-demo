@@ -8,26 +8,17 @@ from pdb import  set_trace
 import pandas as pd
 from boxsdk import exception
 
-# from src.Client import BoxClient
-# from src.DB import DB
 from src.groups import create_groups, get_group_id
 
-#
-# box_client = BoxClient()
-# client = box_client.client
-#
-# set_trace()
-
-# db = DB()
 
 # Loads Config Data from config.json
-# with open('config/config.json') as json_file:
-#     data = json.load(json_file)
-#     log_config = data["logger_config"]
-#     log_config['handlers']['file']['filename'] = '%s/static/reports/%s.log' % (os.getcwd(), box_client.client_created_time.strftime("%Y-%m-%dT%H:%M:%S%z"))
-#
-# logging.config.dictConfig(log_config)
-# logger = logging.getLogger(__name__)
+with open('config/config.json') as json_file:
+    data = json.load(json_file)
+    log_config = data["logger_config"]
+    log_config['handlers']['file']['filename'] = '%s/static/reports/test.log' % (os.getcwd())
+
+logging.config.dictConfig(log_config)
+logger = logging.getLogger(__name__)
 
 
 def get_users(client):
@@ -61,7 +52,6 @@ def get_user_by_email(client, login):
     return user
 
 def create_users(upload_method, file, group_name, query):
-    start = timer()
     """
     Create users at scale
 
@@ -130,8 +120,7 @@ def create_users(upload_method, file, group_name, query):
                 if create_user_response: success_count += 1
                 else: fail_count += 1
 
-    end = timer()
-    return {'success_count': success_count, 'fail_count': fail_count, 'duration': (start - end)}
+    return {'success_count': success_count, 'fail_count': fail_count}
 
 def create_user(client, name, login, group_name):
 

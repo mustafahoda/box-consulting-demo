@@ -2,10 +2,7 @@ from pdb import set_trace
 
 import click
 
-
-# from src import users, upload
 from src.Client import BoxClient
-set_trace()
 app_client = BoxClient()
 
 @click.group()
@@ -78,8 +75,9 @@ def delete_all_users(force):
 @cli1.command()
 @click.argument('name')
 @click.argument('login')
-def create_single_user(name, login, ):
-    response = app_client.create_user(name, login, None)
+@click.argument('group')
+def create_single_user(name, login, group):
+    response = app_client.create_user(name, login, group)
 
 
 @cli1.command()

@@ -3,19 +3,15 @@ import logging.config
 import json
 import os
 
-# from src.Client import BoxClient
-
-# box_client = BoxClient()
-# client = box_client.client
 
 # Loads Config Data from config.json
-# with open('config/config.json') as json_file:
-#     data = json.load(json_file)
-#     log_config = data["logger_config"]
-#     log_config['handlers']['file']['filename'] = '%s/static/reports/%s.log' % (os.getcwd(), box_client.client_created_time.strftime("%Y-%m-%dT%H:%M:%S%z"))
-#
-# logging.config.dictConfig(log_config)
-# logger = logging.getLogger(__name__)
+with open('config/config.json') as json_file:
+    data = json.load(json_file)
+    log_config = data["logger_config"]
+    log_config['handlers']['file']['filename'] = '%s/static/reports/test.log' % (os.getcwd())
+
+logging.config.dictConfig(log_config)
+logger = logging.getLogger(__name__)
 
 
 def create_groups(client, logger, group_name):
