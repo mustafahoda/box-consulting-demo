@@ -2,7 +2,11 @@ from pdb import set_trace
 
 import click
 
-from src import users, upload
+
+# from src import users, upload
+from src.Client import BoxClient
+set_trace()
+app_client = BoxClient()
 
 @click.group()
 def cli1():
@@ -11,7 +15,7 @@ def cli1():
 @cli1.command()
 def print_users():
 
-    users_list = users.get_users()
+    users_list = app_client.get_users()
 
     for id, name in zip(users_list.keys(), users_list.values()):
         click.echo("%s : %s" % (id, name))
@@ -24,7 +28,7 @@ def print_users():
 @click.option('-q', '--query',)
 def create_users_batch(upload_method, file, group, query):
 
-    create_users_response = users.create_users(upload_method, file, group, query)
+    create_users_response = app_client.create_users(upload_method, file, group, query)
     set_trace()
 
     # TODO: Keep count of how many users were added and print it.
@@ -33,7 +37,7 @@ def create_users_batch(upload_method, file, group, query):
 @click.argument('query')
 def create_users_db(query):
 
-    create_users_response = users.create_users('db', None, 'students', query)
+    create_users_response = app_client.create_users('db', None, 'students', query)
 
 
 @cli1.command()
@@ -45,7 +49,7 @@ def delete_single_user(login, force):
     user_input = input()
 
     if user_input == 'DELETE':
-        response = users.delete_user(login, force)
+        response = app_client.delete_user(login, force)
 
         if response:
             click.echo("Successfully deleted user with login %s" % login)
@@ -65,7 +69,7 @@ def delete_all_users(force):
     user_input = input()
 
     if user_input == 'DELETE':
-        response = users.delete_all_users(force)
+        response = app_client.delete_all_users(force)
         click.echo("%s users were deleted" % response['success_count'])
         click.echo("%s users failed to be deleted" % response['fail_count'])
     else:
@@ -75,7 +79,7 @@ def delete_all_users(force):
 @click.argument('name')
 @click.argument('login')
 def create_single_user(name, login, ):
-    response = users.create_user(name, login, None)
+    response = app_client.create_user(name, login, None)
 
 
 @cli1.command()
@@ -83,7 +87,7 @@ def create_single_user(name, login, ):
 @click.argument('destination_folder_id')
 def upload_single_file(source, destination_folder_id):
 
-    response = upload.upload_single_file(source, destination_folder_id)
+    response = app_client.upload_single_file(source, destination_folder_id)
 
 
 cli = click.CommandCollection(sources=[cli1])

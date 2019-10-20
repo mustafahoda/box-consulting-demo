@@ -3,22 +3,22 @@ import logging.config
 import json
 import os
 
-from src.Client import BoxClient
+# from src.Client import BoxClient
 
-box_client = BoxClient()
-client = box_client.client
+# box_client = BoxClient()
+# client = box_client.client
 
 # Loads Config Data from config.json
-with open('config/config.json') as json_file:
-    data = json.load(json_file)
-    log_config = data["logger_config"]
-    log_config['handlers']['file']['filename'] = '%s/static/reports/%s.log' % (os.getcwd(), box_client.client_created_time.strftime("%Y-%m-%dT%H:%M:%S%z"))
+# with open('config/config.json') as json_file:
+#     data = json.load(json_file)
+#     log_config = data["logger_config"]
+#     log_config['handlers']['file']['filename'] = '%s/static/reports/%s.log' % (os.getcwd(), box_client.client_created_time.strftime("%Y-%m-%dT%H:%M:%S%z"))
+#
+# logging.config.dictConfig(log_config)
+# logger = logging.getLogger(__name__)
 
-logging.config.dictConfig(log_config)
-logger = logging.getLogger(__name__)
 
-
-def create_groups(group_name):
+def create_groups(client, logger, group_name):
 
     if is_a_group(group_name):
         logger.warning('Group already exists.')
@@ -26,7 +26,7 @@ def create_groups(group_name):
         response = client.create_group(group_name)
 
 
-def is_a_group(group_to_check):
+def is_a_group(client, group_to_check):
 
     """
     returns whether a group is a present in the enterprise
@@ -46,7 +46,7 @@ def is_a_group(group_to_check):
 def assign_user_group(user_id, group):
     pass
 
-def get_group_id(group_name):
+def get_group_id(client, group_name):
 
     """
     Returns the group id as an int by searching for the group name
