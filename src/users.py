@@ -93,27 +93,51 @@ def create_users(client, upload_method, file, group_name, query):
         # create a Pandas Dataframe to store Excel Data
         df = pd.read_excel(file)
 
-        if len(df) > 10: create_users_with_thread(payload)
+        row_count = len(df)
+        set_trace()
 
-        # Todo: is there a better way to iterate through DataFrame rows?
-        for row in df.itertuples():
-            create_user_response = create_user(row._1 + row._2, row.Email, group_name)
+        if row_count > 10:
+            payload = list()
+            # generate payload
 
-            if create_user_response: success_count += 1
-            else: fail_count += 1
+            for row in df.itertuples():
+                payload_tuple = (row._1 + ' ' + row._2, row.Email, group_name)
+                payload.append(payload_tuple)
+
+            set_trace()
+
+            create_users_with_thread(payload)
+
+        else:
+            # Todo: is there a better way to iterate through DataFrame rows?
+            for row in df.itertuples():
+                create_user_response = create_user(row._1 + row._2, row.Email, group_name)
+
+                if create_user_response: success_count += 1
+                else: fail_count += 1
 
     # JSON Handler
     elif upload_method == 'json':
         with open(file) as json_file:
             data = json.load(json_file)
 
-            if len(data) > 10: create_users_with_thread(payload)
+            row_count = len(data)
+            set_trace()
 
-            for current_user in data:
-                create_user_response = create_user(current_user['first_name'] + ' ' + current_user['last_name'], current_user['email'], group_name)
+            if row_count > 10:
+                payload = list()
+                for current_user in data:
+                    payload_tuple = (current_user['first_name'] + ' ' + current_user['last_name'], current_user['email'], group_name)
+                    payload.append(payload_tuple)
 
-                if create_user_response: success_count  += 1
-                else: fail_count += 1
+                create_users_with_thread(client, payload)
+
+            else:
+                for current_user in data:
+                    create_user_response = create_user(current_user['first_name'] + ' ' + current_user['last_name'], current_user['email'], group_name)
+
+                    if create_user_response: success_count  += 1
+                    else: fail_count += 1
 
     # PostgreSQL Handler
     elif upload_method == 'db':
@@ -125,19 +149,28 @@ def create_users(client, upload_method, file, group_name, query):
             records = cursor.fetchall()
 
             num_rows = cursor.rowcount
-            if num_rows > 10: create_users_with_thread(payload)
+            set_trace()
+
+            if num_rows > 10:
+                payload = list()
+                for row in records:
+                    payload_tuple = (row[1] + row[2], row[3], group_name)
+                    payload.append(payload_tuple)
+
+                create_users_with_thread(client, payload)
 
 
-            for row in records:
-                login = row[3]
-                create_user_response = create_user(row[1] + row[2], login, group_name)
+            else:
+                for row in records:
+                    login = row[3]
+                    create_user_response = create_user(row[1] + row[2], login, group_name)
 
-                if create_user_response: success_count += 1
-                else: fail_count += 1
+                    if create_user_response: success_count += 1
+                    else: fail_count += 1
 
     return {'success_count': success_count, 'fail_count': fail_count}
 
-def create_user(client, name, login, group_name):
+def create_user(client, payload):
 
     """
     Creates a single user
@@ -148,7 +181,12 @@ def create_user(client, name, login, group_name):
     :return:
     """
 
-    # set_trace()
+    set_trace()
+
+    # Payload Unpacking
+    name = payload[0]
+    login = payload[1]
+    group_name = payload[2]
 
     success = False
     group_id = None
@@ -242,8 +280,11 @@ def delete_user(client, email, force):
 
 def create_users_with_thread(payload):
 
+    print("THREADINNNGGG")
+    set_trace()
+
     with ThreadPoolExecutor(max_workers=15) as executors:
-        for _ in executors.map(create_user, payload):
+        for _ in executors.map(create_user, client, payload):
             print("done")
 
 
