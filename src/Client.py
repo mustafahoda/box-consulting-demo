@@ -3,6 +3,7 @@ import json
 import datetime
 import logging
 import logging.config
+from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
 from boxsdk import Client, exception
@@ -17,6 +18,9 @@ from pdb import set_trace
 
 
 # Loads Config Data from config.json
+from src.DB import DB
+# from src import threader
+
 with open('config/config.json') as json_file:
     data = json.load(json_file)
     app_config = data["app_config"]
@@ -98,14 +102,14 @@ class BoxClient():
         success_count = 0
         fail_count = 0
 
-        group_id = get_group_id(self.client, group_name)
+        group_id = self.get_group_id(group_name)
 
         # If the group doesn't exist, create it.
         if not group_id:
             user_input = input("The group %s doesn't exist. Would you like to create it (yes/no)? " % group_name)
 
             if user_input == "yes":
-                group_response = create_groups(self.client, logger, group_name)
+                group_response = self.create_groups(logger, group_name)
 
                 msg = "Group '%s' successfully created" % group_name
                 logger.info(msg)
@@ -133,14 +137,13 @@ class BoxClient():
                     payload_tuple = (row._1 + ' ' + row._2, row.Email, group_name)
                     payload.append(payload_tuple)
 
-                set_trace()
 
-                create_users_with_thread(payload)
+                self.create_users_with_thread(payload)
 
             else:
                 # Todo: is there a better way to iterate through DataFrame rows?
                 for row in df.itertuples():
-                    create_user_response = create_user(row._1 + row._2, row.Email, group_name)
+                    create_user_response = self.create_user(row._1 + row._2, row.Email, group_name)
 
                     if create_user_response:
                         success_count += 1
@@ -162,11 +165,11 @@ class BoxClient():
                         current_user['first_name'] + ' ' + current_user['last_name'], current_user['email'], group_name)
                         payload.append(payload_tuple)
 
-                    create_users_with_thread(client, payload)
+                        self.create_users_with_thread(payload)
 
                 else:
                     for current_user in data:
-                        create_user_response = create_user(current_user['first_name'] + ' ' + current_user['last_name'],
+                        create_user_response = self.create_user(current_user['first_name'] + ' ' + current_user['last_name'],
                                                            current_user['email'], group_name)
 
                         if create_user_response:
@@ -192,13 +195,13 @@ class BoxClient():
                         payload_tuple = (row[1] + row[2], row[3], group_name)
                         payload.append(payload_tuple)
 
-                    create_users_with_thread(client, payload)
+                        self.create_users_with_thread(payload)
 
 
                 else:
                     for row in records:
                         login = row[3]
-                        create_user_response = create_user(row[1] + row[2], login, group_name)
+                        create_user_response = self.create_user(row[1] + row[2], login, group_name)
 
                         if create_user_response:
                             success_count += 1
@@ -218,7 +221,6 @@ class BoxClient():
         :return:
         """
 
-        set_trace()
 
         # Payload Unpacking
         name = payload[0]
@@ -271,7 +273,6 @@ class BoxClient():
         users = self.client.users(user_type='all')
 
         for user in users:
-            set_trace()
             # if the current user is accessed, which is also the admin, don't delete it.
             if user == self.client.user().get() or user.id in admins: continue
 
@@ -314,15 +315,70 @@ class BoxClient():
 
         return success
 
-    def create_users_with_thread(payload):
+    def generate_payload(self, upload_method, file, group_name, query):
 
-        print("THREADINNNGGG")
-        set_trace()
+        # Excel Handler
+        if upload_method == 'excel':
+            # create a Pandas Dataframe to store Excel Data
+            df = pd.read_excel(file)
+
+            row_count = len(df)
+
+            if row_count > 10:
+                payload = list()
+                # generate payload
+
+                for row in df.itertuples():
+                    payload_tuple = (row._1 + ' ' + row._2, row.Email, group_name)
+                    payload.append(payload_tuple)
+
+                # self.create_users_with_thread(payload)
+
+        # JSON Handler
+        elif upload_method == 'json':
+            with open(file) as json_file:
+                data = json.load(json_file)
+
+                row_count = len(data)
+
+                if row_count > 10:
+                    payload = list()
+                    for current_user in data:
+                        payload_tuple = (
+                            current_user['first_name'] + ' ' + current_user['last_name'], current_user['email'],
+                            group_name)
+                        payload.append(payload_tuple)
+
+                        # self.create_users_with_thread(payload)
+
+        # PostgreSQL Handler
+        elif upload_method == 'db':
+
+            db = DB()
+
+            with db.conn.cursor() as cursor:
+                cursor.execute(query)
+                records = cursor.fetchall()
+
+                num_rows = cursor.rowcount
+
+                if num_rows > 10:
+                    payload = list()
+                    for row in records:
+                        payload_tuple = (row[1] + row[2], row[3], group_name)
+                        payload.append(payload_tuple)
+
+                        # self.create_users_with_thread(payload)
+
+        return payload
+
+    def create_users_with_thread(self, payload):
+
+        print("Begin Threading Operation")
 
         with ThreadPoolExecutor(max_workers=15) as executors:
-            for _ in executors.map(create_user, client, payload):
+            for _ in executors.map(self.create_user, payload):
                 print("done")
-
 
 
     # Common Group Methods
@@ -342,7 +398,6 @@ class BoxClient():
         :return:
         """
 
-        set_trace()
         groups = self.client.get_groups(group_to_check)
         list_of_groups = []
 

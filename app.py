@@ -91,5 +91,4 @@ cli = click.CommandCollection(sources=[cli1])
 
 if __name__ == "__main__":
 
-    while True:
-        cli()
+    cli()
