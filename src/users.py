@@ -17,6 +17,8 @@ from src.groups import create_groups, get_group_id
 box_client = BoxClient()
 client = box_client.client
 
+set_trace()
+
 db = DB()
 
 # Loads Config Data from config.json
@@ -143,18 +145,25 @@ def create_user(name, login, group_name):
     :return:
     """
 
+    # set_trace()
+
     success = False
+    group_id = None
 
-    if name == None or login == None or group_name == None:   return success
+    if name == None or login == None:   return success
 
-    group_id = get_group_id(group_name)
+    if group_name == None:
+        group_id = get_group_id(group_name)
 
     try:
         user = client.create_user(name, login)
 
+
         # TODO: Deal with this later
-        if login != None:
+        if group_id != None:
             membership_response = client.group(group_id=group_id).add_member(user)
+
+        # set_trace()
 
     # if an error is throw by the API, handle it by sending to failed_array
     # the most common error is that user already exists

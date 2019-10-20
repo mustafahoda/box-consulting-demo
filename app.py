@@ -74,9 +74,8 @@ def delete_all_users(force):
 @cli1.command()
 @click.argument('name')
 @click.argument('login')
-@click.argument('group')
-def create_single_user(name, login, group):
-    response = users.create_user(name, login, group)
+def create_single_user(name, login, ):
+    response = users.create_user(name, login, None)
 
 
 @cli1.command()

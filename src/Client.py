@@ -12,6 +12,7 @@ with open('config/config.json') as json_file:
     client_id = app_config["client_id"]
     client_secret = app_config["client_secret"]
     client_token = app_config["access_token"]
+    as_users = app_config["as_users"]
 
 
 auth = OAuth2(
@@ -26,3 +27,4 @@ class BoxClient():
         self.client = Client(auth)
         self.client_creator = self.client.user()
         self.client_created_time = datetime.datetime.now()
+        self.as_users = as_users
