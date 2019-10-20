@@ -2,7 +2,7 @@ from pdb import set_trace
 
 import click
 
-from src import users
+from src import users, upload
 
 @click.group()
 def cli1():
@@ -13,8 +13,8 @@ def print_users():
 
     users_list = users.get_users()
 
-    for user in users_list:
-        click.echo("%s : %s" % (user.id, user.message))
+    for id, name in zip(users_list.keys(), users_list.values()):
+        click.echo("%s : %s" % (id, name))
 
 
 @cli1.command()
@@ -25,6 +25,7 @@ def print_users():
 def create_users_batch(upload_method, file, group, query):
 
     create_users_response = users.create_users(upload_method, file, group, query)
+    set_trace()
 
     # TODO: Keep count of how many users were added and print it.
 
@@ -70,14 +71,21 @@ def delete_all_users(force):
     else:
         click.echo("No users were deleted.")
 
+@cli1.command()
+@click.argument('name')
+@click.argument('login')
+@click.argument('group')
+def create_single_user(name, login, group):
+    response = users.create_user(name, login, group)
 
 
+@cli1.command()
+@click.argument('source', type=click.Path(exists=True), nargs = 1)
+@click.argument('destination_folder_id')
+def upload_single_file(source, destination_folder_id):
 
+    response = upload.upload_single_file(source, destination_folder_id)
 
-
-# @click.command()
-# def migrate_files():
-#     pass
 
 cli = click.CommandCollection(sources=[cli1])
 

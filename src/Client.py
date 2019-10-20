@@ -1,15 +1,12 @@
-from pdb import set_trace
-
-import datetime
 import json
+import datetime
 
-from boxsdk import Client, OAuth2
-from boxsdk import exception
-
+from boxsdk import Client
+from boxsdk import OAuth2
 
 
 # Loads Config Data from config.json
-with open('config.json') as json_file:
+with open('config/config.json') as json_file:
     data = json.load(json_file)
     app_config = data["app_config"]
     client_id = app_config["client_id"]

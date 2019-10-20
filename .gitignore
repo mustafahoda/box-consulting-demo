@@ -128,5 +128,4 @@ dmypy.json
 .idea/
 
 # Project Configuration Files
-config.json
-
+config/*

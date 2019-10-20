@@ -6,7 +6,7 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-boxsdk = "*"
+boxsdk = {extras = ["jwt"],version = "*"}
 flask = "*"
 click = "*"
 pandas = "*"

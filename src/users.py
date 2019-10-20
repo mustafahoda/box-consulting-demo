@@ -4,6 +4,7 @@ import logging
 import logging.config
 # TODO Remove pdb import
 from pdb import  set_trace
+from timeit import default_timer as timer
 
 import pandas as pd
 from boxsdk import exception
@@ -59,7 +60,7 @@ def get_user_by_email(login):
     return user
 
 def create_users(upload_method, file, group_name, query):
-
+    start = timer()
     """
     Create users at scale
 
@@ -128,8 +129,8 @@ def create_users(upload_method, file, group_name, query):
                 if create_user_response: success_count += 1
                 else: fail_count += 1
 
-
-    return {'success_count': success_count, 'fail_count': fail_count}
+    end = timer()
+    return {'success_count': success_count, 'fail_count': fail_count, 'duration': (start - end)}
 
 def create_user(name, login, group_name):
 
