@@ -2,6 +2,8 @@ import os
 import json
 import logging
 import logging.config
+from concurrent.futures import ThreadPoolExecutor
+
 # TODO Remove pdb import
 from pdb import  set_trace
 
@@ -9,6 +11,7 @@ import pandas as pd
 from boxsdk import exception
 
 from src.groups import create_groups, get_group_id
+from src.DB import DB
 
 
 # Loads Config Data from config.json
@@ -16,6 +19,7 @@ with open('config/config.json') as json_file:
     data = json.load(json_file)
     log_config = data["logger_config"]
     log_config['handlers']['file']['filename'] = '%s/static/reports/test.log' % (os.getcwd())
+    admins = data['app_config']['as_users']
 
 logging.config.dictConfig(log_config)
 logger = logging.getLogger(__name__)
@@ -109,6 +113,9 @@ def create_users(upload_method, file, group_name, query):
 
     # PostgreSQL Handler
     elif upload_method == 'db':
+
+        db = DB()
+
         with db.conn.cursor() as cursor:
             cursor.execute(query)
             records = cursor.fetchall()
@@ -182,9 +189,9 @@ def delete_all_users(client, force):
     users = client.users(user_type='all')
 
     for user in users:
-
+        set_trace()
         # if the current user is accessed, which is also the admin, don't delete it.
-        if user == client.user().get(): continue
+        if user == client.user().get() or user.id in admins: continue
 
         delete_response = client.user(user.id).delete(force=force)
 
@@ -224,4 +231,6 @@ def delete_user(client, email, force):
         logger.error(msg)
 
     return success
+
+
 
