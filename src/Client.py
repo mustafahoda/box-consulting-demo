@@ -424,5 +424,38 @@ class BoxClient():
     # Common Upload Methods
 
     def upload_single_file(self, source, destination_folder_id):
+
         response = self.client.folder(folder_id=destination_folder_id).upload(source)
+
         return response
+
+    def upload_all_files_from_directory(self, source, destination_folder_id):
+
+        # 1. Check if the path exists
+        if not(os.path.exists(source)):
+            print("Path doesn't exist.")
+            return 0
+
+        content = []
+        # 2. Get all files in directory
+        for path, subdirs, files in os.walk(source):
+            for name in files:
+                content.append(os.path.join(path, name))
+
+        set_trace()
+
+        for file in content:
+            self.upload_single_file(source=file, destination_folder_id = destination_folder_id)
+
+    # Common Folder Methods
+
+    def get_items_in_folder(self, folder_id):
+
+        items_dict = dict()
+
+        items = self.client.folder(folder_id).get_items()
+
+        for item in items:
+            items_dict[item.id] = item.name
+
+        return items_dict

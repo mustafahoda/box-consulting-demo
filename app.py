@@ -5,7 +5,6 @@ import click
 from src.Client import BoxClient
 app_client = BoxClient()
 
-set_trace()
 
 @click.group()
 def cli1():
@@ -87,6 +86,20 @@ def create_single_user(name, login, group):
 def upload_single_file(source, destination_folder_id):
 
     response = app_client.upload_single_file(source, destination_folder_id)
+
+@cli1.command()
+@click.argument('source')
+@click.argument('destination_folder_id')
+def upload_all_files_from_directory(source, destination_folder_id):
+    app_client.upload_all_files_from_directory(source, destination_folder_id)
+
+@cli1.command()
+@click.argument('folder_id')
+def print_items_in_folder(folder_id):
+    items = app_client.get_items_in_folder(folder_id)
+
+    for id, name in zip(items.keys(), items.values()):
+        click.echo("%s : %s" % (id, name))
 
 
 cli = click.CommandCollection(sources=[cli1])
