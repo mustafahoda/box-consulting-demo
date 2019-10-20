@@ -5,6 +5,8 @@ import click
 from src.Client import BoxClient
 app_client = BoxClient()
 
+set_trace()
+
 @click.group()
 def cli1():
     pass
@@ -32,7 +34,7 @@ def create_users_batch(upload_method, file, group, query):
 @cli1.command()
 @click.argument('query')
 def create_users_db(query):
-
+    # set_trace()
     create_users_response = app_client.create_users('db', None, 'students', query)
 
 

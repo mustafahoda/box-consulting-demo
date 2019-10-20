@@ -9,13 +9,8 @@ import pandas as pd
 from boxsdk import Client, exception
 from boxsdk import OAuth2
 
-from src import users
-from src import groups
-from src import upload
-
 #TODO: Delete
 from pdb import set_trace
-
 
 # Loads Config Data from config.json
 from src.DB import DB
@@ -187,7 +182,6 @@ class BoxClient():
                 records = cursor.fetchall()
 
                 num_rows = cursor.rowcount
-                set_trace()
 
                 if num_rows > 10:
                     payload = list()
@@ -376,10 +370,9 @@ class BoxClient():
 
         print("Begin Threading Operation")
 
-        with ThreadPoolExecutor(max_workers=15) as executors:
+        with ThreadPoolExecutor(max_workers=10) as executors:
             for _ in executors.map(self.create_user, payload):
                 print("done")
-
 
     # Common Group Methods
     def create_groups(self, logger, group_name):
