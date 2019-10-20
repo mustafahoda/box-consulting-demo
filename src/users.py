@@ -20,7 +20,7 @@ client = box_client.client
 db = DB()
 
 # Loads Config Data from config.json
-with open('config.json') as json_file:
+with open('config/config.json') as json_file:
     data = json.load(json_file)
     log_config = data["logger_config"]
     log_config['handlers']['file']['filename'] = '%s/static/reports/%s.log' % (os.getcwd(), box_client.client_created_time.strftime("%Y-%m-%dT%H:%M:%S%z"))

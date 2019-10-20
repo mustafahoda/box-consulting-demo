@@ -5,7 +5,7 @@ from pdb import  set_trace
 import psycopg2
 
 # Loads Config Data from config.json
-with open('config.json') as json_file:
+with open('config/config.json') as json_file:
     data = json.load(json_file)
     db_config = data["db_config"]
     db_name = db_config["db_name"]
