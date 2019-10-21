@@ -98,7 +98,6 @@ def upload_single_file(source, destination_folder_id):
 @click.argument('source', type=click.Path(exists=True))
 @click.argument('destination_folder_id')
 def upload_all_files_from_directory(source, destination_folder_id):
-    set_trace()
     app_client.upload_all_files_from_directory(source, destination_folder_id)
 
 
