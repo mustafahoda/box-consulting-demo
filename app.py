@@ -83,7 +83,6 @@ def delete_all_users(force):
 def create_single_user(name, login, group):
 
     payload = (name[0] + " " + name[1], login, group)
-    set_trace()
     response = app_client.create_user(payload)
 
 

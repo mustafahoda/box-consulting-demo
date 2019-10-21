@@ -38,7 +38,7 @@ auth = OAuth2(
 with open('config/config.json') as json_file:
     data = json.load(json_file)
     log_config = data["logger_config"]
-    log_config['handlers']['file']['filename'] = '%s/static/reports/test.log' % (os.getcwd())
+    log_config['handlers']['file']['filename'] = '%s/static/reports/command_results.log' % (os.getcwd())
 
 logging.config.dictConfig(log_config)
 logger = logging.getLogger(__name__)
@@ -122,28 +122,33 @@ class BoxClient():
             df = pd.read_excel(file)
 
             row_count = len(df)
-            set_trace()
 
-            if row_count > 10:
-                payload = list()
-                # generate payload
+            input("You are about to create %s new user accounts. Are you sure you'd like to continue? (yes/no): " % row_count)
+            if input == "yes":
 
-                for row in df.itertuples():
-                    payload_tuple = (row._1 + ' ' + row._2, row.Email, group_name)
-                    payload.append(payload_tuple)
+                if row_count > 10:
+                    payload = list()
+                    # generate payload
+
+                    for row in df.itertuples():
+                        payload_tuple = (row._1 + ' ' + row._2, row.Email, group_name)
+                        payload.append(payload_tuple)
 
 
-                self.create_users_with_thread(payload)
+                    self.create_users_with_thread(payload)
 
+                else:
+                    # Todo: is there a better way to iterate through DataFrame rows?
+                    for row in df.itertuples():
+                        create_user_response = self.create_user(row._1 + row._2, row.Email, group_name)
+
+                        if create_user_response:
+                            success_count += 1
+                        else:
+                            fail_count += 1
             else:
-                # Todo: is there a better way to iterate through DataFrame rows?
-                for row in df.itertuples():
-                    create_user_response = self.create_user(row._1 + row._2, row.Email, group_name)
+                logger.info("User chose not to create accounts")
 
-                    if create_user_response:
-                        success_count += 1
-                    else:
-                        fail_count += 1
 
         # JSON Handler
         elif upload_method == 'json':
@@ -151,26 +156,31 @@ class BoxClient():
                 data = json.load(json_file)
 
                 row_count = len(data)
-                set_trace()
 
-                if row_count > 10:
-                    payload = list()
-                    for current_user in data:
-                        payload_tuple = (
-                        current_user['first_name'] + ' ' + current_user['last_name'], current_user['email'], group_name)
-                        payload.append(payload_tuple)
+                input("You are about to create %s new user accounts. Are you sure you'd like to continue? (yes/no): " % row_count)
+                if input == "yes":
 
-                        self.create_users_with_thread(payload)
+                    if row_count > 10:
+                        payload = list()
+                        for current_user in data:
+                            payload_tuple = (
+                            current_user['first_name'] + ' ' + current_user['last_name'], current_user['email'], group_name)
+                            payload.append(payload_tuple)
+
+                            self.create_users_with_thread(payload)
+
+                    else:
+                        for current_user in data:
+                            create_user_response = self.create_user(current_user['first_name'] + ' ' + current_user['last_name'],
+                                                               current_user['email'], group_name)
+
+                            if create_user_response:
+                                success_count += 1
+                            else:
+                                fail_count += 1
 
                 else:
-                    for current_user in data:
-                        create_user_response = self.create_user(current_user['first_name'] + ' ' + current_user['last_name'],
-                                                           current_user['email'], group_name)
-
-                        if create_user_response:
-                            success_count += 1
-                        else:
-                            fail_count += 1
+                    logger.info("User chose not to create accounts")
 
         # PostgreSQL Handler
         elif upload_method == 'db':
@@ -183,24 +193,29 @@ class BoxClient():
 
                 num_rows = cursor.rowcount
 
-                if num_rows > 10:
-                    payload = list()
-                    for row in records:
-                        payload_tuple = (row[1] + row[2], row[3], group_name)
-                        payload.append(payload_tuple)
+                input("You are about to create %s new user accounts. Are you sure you'd like to continue? (yes/no): " % num_rows)
+                if input == "yes":
 
-                        self.create_users_with_thread(payload)
+                    if num_rows > 10:
+                        payload = list()
+                        for row in records:
+                            payload_tuple = (row[1] + row[2], row[3], group_name)
+                            payload.append(payload_tuple)
+
+                            self.create_users_with_thread(payload)
 
 
+                    else:
+                        for row in records:
+                            login = row[3]
+                            create_user_response = self.create_user(row[1] + row[2], login, group_name)
+
+                            if create_user_response:
+                                success_count += 1
+                            else:
+                                fail_count += 1
                 else:
-                    for row in records:
-                        login = row[3]
-                        create_user_response = self.create_user(row[1] + row[2], login, group_name)
-
-                        if create_user_response:
-                            success_count += 1
-                        else:
-                            fail_count += 1
+                    logger.info("User chose not to create accounts")
 
         return {'success_count': success_count, 'fail_count': fail_count}
 
@@ -235,8 +250,6 @@ class BoxClient():
             # TODO: Deal with this later
             if group_id != None:
                 membership_response = self.client.group(group_id=group_id).add_member(user)
-
-            # set_trace()
 
         # if an error is throw by the API, handle it by sending to failed_array
         # the most common error is that user already exists
@@ -370,9 +383,9 @@ class BoxClient():
 
         print("Begin Threading Operation")
 
-        with ThreadPoolExecutor(max_workers=10) as executors:
+        with ThreadPoolExecutor(max_workers=5) as executors:
             for _ in executors.map(self.create_user, payload):
-                print("done")
+                print("Thread Executor")
 
     # Common Group Methods
     def create_groups(self, logger, group_name):
