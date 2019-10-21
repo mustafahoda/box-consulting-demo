@@ -20,22 +20,24 @@ def print_users():
 
 
 @cli1.command()
-@click.argument('file', type=click.Path(exists=True), nargs = 1)
-@click.argument('group', nargs=1)
+@click.option('-f', '--file', type=click.Path(exists=True), nargs = 1)
 @click.option('-m', '--upload-method', type=click.Choice(['excel', 'json', 'db'], case_sensitive=False))
-@click.option('-q', '--query', required = False)
+@click.option('-q', '--query', required=False)
+@click.argument('group', type=click.Choice(['students', 'faculty']), nargs=1)
 def create_users_batch(upload_method, file, group, query):
+
+    if upload_method == 'db' and query is None:
+        click.echo("A SQL Query must be entered when choosing the database upload method")
+        return 0
+
+
+    if ((upload_method == 'excel') or (upload_method == 'json')) and file is None:
+        click.echo("A file path must be entered in order to use the upload method %s" % upload_method)
+        return 0
+
     create_users_response = app_client.create_users(upload_method, file, group, query)
-    set_trace()
 
     # TODO: Keep count of how many users were added and print it.
-
-
-@cli1.command()
-@click.argument('query')
-def create_users_db(query):
-    # set_trace()
-    create_users_response = app_client.create_users('db', None, 'students', query)
 
 
 @cli1.command()
@@ -75,11 +77,13 @@ def delete_all_users(force):
 
 
 @cli1.command()
-@click.argument('name')
+@click.argument('name', nargs = 2)
 @click.argument('login')
-@click.argument('group')
+@click.argument('group', type=click.Choice(['students', 'faculty']))
 def create_single_user(name, login, group):
-    payload = (name, login, group)
+
+    payload = (name[0] + " " + name[1], login, group)
+    set_trace()
     response = app_client.create_user(payload)
 
 
@@ -92,9 +96,10 @@ def upload_single_file(source, destination_folder_id):
 
 
 @cli1.command()
-@click.argument('source')
+@click.argument('source', type=click.Path(exists=True))
 @click.argument('destination_folder_id')
 def upload_all_files_from_directory(source, destination_folder_id):
+    set_trace()
     app_client.upload_all_files_from_directory(source, destination_folder_id)
 
 
