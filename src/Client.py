@@ -123,8 +123,8 @@ class BoxClient():
 
             row_count = len(df)
 
-            input("You are about to create %s new user accounts. Are you sure you'd like to continue? (yes/no): " % row_count)
-            if input == "yes":
+            user_input = input("You are about to create %s new user accounts. Are you sure you'd like to continue? (yes/no): " % row_count)
+            if user_input == "yes":
 
                 if row_count > 10:
                     payload = list()
@@ -157,8 +157,8 @@ class BoxClient():
 
                 row_count = len(data)
 
-                input("You are about to create %s new user accounts. Are you sure you'd like to continue? (yes/no): " % row_count)
-                if input == "yes":
+                user_input = input("You are about to create %s new user accounts. Are you sure you'd like to continue? (yes/no): " % row_count)
+                if user_input == "yes":
 
                     if row_count > 10:
                         payload = list()
@@ -193,7 +193,7 @@ class BoxClient():
 
                 num_rows = cursor.rowcount
 
-                input("You are about to create %s new user accounts. Are you sure you'd like to continue? (yes/no): " % num_rows)
+                user_input = input("You are about to create %s new user accounts. Are you sure you'd like to continue? (yes/no): " % num_rows)
                 if input == "yes":
 
                     if num_rows > 10:
