@@ -30,6 +30,7 @@ def create_users_batch(upload_method, file, group, query):
 
     # TODO: Keep count of how many users were added and print it.
 
+
 @cli1.command()
 @click.argument('query')
 def create_users_db(query):
@@ -72,12 +73,14 @@ def delete_all_users(force):
     else:
         click.echo("No users were deleted.")
 
+
 @cli1.command()
 @click.argument('name')
 @click.argument('login')
 @click.argument('group')
 def create_single_user(name, login, group):
-    response = app_client.create_user(name, login, group)
+    payload = (name, login, group)
+    response = app_client.create_user(payload)
 
 
 @cli1.command()
@@ -87,11 +90,13 @@ def upload_single_file(source, destination_folder_id):
 
     response = app_client.upload_single_file(source, destination_folder_id)
 
+
 @cli1.command()
 @click.argument('source')
 @click.argument('destination_folder_id')
 def upload_all_files_from_directory(source, destination_folder_id):
     app_client.upload_all_files_from_directory(source, destination_folder_id)
+
 
 @cli1.command()
 @click.argument('folder_id')
