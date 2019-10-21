@@ -24,7 +24,7 @@ def print_users():
 @click.option('-m', '--upload-method', type=click.Choice(['excel', 'json', 'db'], case_sensitive=False))
 @click.option('-q', '--query', required=False)
 @click.argument('group', type=click.Choice(['students', 'faculty']), nargs=1)
-def create_users_batch(upload_method, file, group, query):
+def create_multiple_users(upload_method, file, group, query):
 
     if upload_method == 'db' and query is None:
         click.echo("A SQL Query must be entered when choosing the database upload method")
