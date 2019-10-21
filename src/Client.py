@@ -455,8 +455,6 @@ class BoxClient():
             for name in files:
                 content.append(os.path.join(path, name))
 
-        set_trace()
-
         for file in content:
             self.upload_single_file(source=file, destination_folder_id = destination_folder_id)
 
