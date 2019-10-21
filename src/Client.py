@@ -171,8 +171,8 @@ class BoxClient():
 
                     else:
                         for current_user in data:
-                            create_user_response = self.create_user(current_user['first_name'] + ' ' + current_user['last_name'],
-                                                               current_user['email'], group_name)
+                            create_user_response = self.create_user((current_user['first_name'] + ' ' + current_user['last_name'],
+                                                               current_user['email'], group_name))
 
                             if create_user_response:
                                 success_count += 1
@@ -456,6 +456,7 @@ class BoxClient():
                 content.append(os.path.join(path, name))
 
         for file in content:
+            print(file)
             self.upload_single_file(source=file, destination_folder_id = destination_folder_id)
 
     # Common Folder Methods
