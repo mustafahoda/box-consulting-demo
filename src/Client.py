@@ -194,7 +194,7 @@ class BoxClient():
                 num_rows = cursor.rowcount
 
                 user_input = input("You are about to create %s new user accounts. Are you sure you'd like to continue? (yes/no): " % num_rows)
-                if input == "yes":
+                if user_input == "yes":
 
                     if num_rows > 10:
                         payload = list()
