@@ -10,11 +10,12 @@ with open('config/config.json') as json_file:
     db_config = data["db_config"]
     db_name = db_config["db_name"]
     db_user = db_config["db_user"]
+    db_password = db_config["db_password"]
 
 
 class DB():
     def __init__(self):
-        self.conn = psycopg2.connect("dbname=%s user=%s" % (db_name, db_user))
+        self.conn = psycopg2.connect("dbname=%s user=%s password=%s" % (db_name, db_user, db_password))
         self.conn_time = datetime.now()
 
     def close(self):
