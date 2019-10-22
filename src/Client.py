@@ -383,7 +383,7 @@ class BoxClient():
 
         print("Begin Threading Operation")
 
-        with ThreadPoolExecutor(max_workers=5) as executors:
+        with ThreadPoolExecutor(max_workers=3) as executors:
             for _ in executors.map(self.create_user, payload):
                 print("Thread Executor")
 
